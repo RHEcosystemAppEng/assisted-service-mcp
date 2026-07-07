@@ -95,7 +95,7 @@ async def list_clusters(
 
     return ToolResult(
         content=formatted_output + list_clusters_followups(resp),
-        structured_content={"result": resp},
+        structured_content={"result": json.dumps(resp)},
     )
 
 
@@ -467,5 +467,5 @@ async def get_installation_progress(
     )
     return ToolResult(
         content=json.dumps(result) + installation_progress_followups(result["status"]),
-        structured_content={"result": result},
+        structured_content={"result": json.dumps(result)},
     )

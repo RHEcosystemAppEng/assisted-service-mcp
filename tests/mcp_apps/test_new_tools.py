@@ -52,7 +52,7 @@ class TestGetClusterHosts:
             result = await get_cluster_hosts(_mock_token, "cluster-1")
 
         assert isinstance(result, ToolResult)
-        data = result.structured_content["result"]
+        data = json.loads(result.structured_content["result"])
         assert len(data["hosts"]) == 1
         assert data["hosts"][0]["id"] == "host-1"
         assert data["hosts"][0]["hostname"] == "master-0"
@@ -75,7 +75,7 @@ class TestGetClusterHosts:
             result = await get_cluster_hosts(_mock_token, "cluster-1")
 
         assert isinstance(result, ToolResult)
-        data = result.structured_content["result"]
+        data = json.loads(result.structured_content["result"])
         assert data["hosts"] == []
         assert data["discovery_iso_url"] == ""
 
@@ -102,7 +102,7 @@ class TestGetInstallationProgress:
             result = await get_installation_progress(_mock_token, "cluster-1")
 
         assert isinstance(result, ToolResult)
-        data = result.structured_content["result"]
+        data = json.loads(result.structured_content["result"])
         assert data["status"] == "installing"
         assert data["progress"] == 65
         assert data["status_info"] == "Bootstrap complete"
@@ -123,7 +123,7 @@ class TestGetInstallationProgress:
             result = await get_installation_progress(_mock_token, "cluster-1")
 
         assert isinstance(result, ToolResult)
-        data = result.structured_content["result"]
+        data = json.loads(result.structured_content["result"])
         assert data["status"] == "pending-for-input"
         assert data["progress"] == 0
 

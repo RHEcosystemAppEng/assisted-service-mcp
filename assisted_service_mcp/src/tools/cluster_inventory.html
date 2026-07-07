@@ -1045,8 +1045,11 @@ function initMcp(module) {
 
   app.ontoolresult = (result) => {
     const sc = result.structuredContent;
-    if (sc && sc.data && Array.isArray(sc.data)) {
-      clusters = sc.data;
+    if (sc && sc.result) {
+      let data;
+      try { data = typeof sc.result === "string" ? JSON.parse(sc.result) : sc.result; } catch { return; }
+      if (!Array.isArray(data)) return;
+      clusters = data;
       filteredClusters = [...clusters];
       renderTable();
       if (clusters.length > 0) {

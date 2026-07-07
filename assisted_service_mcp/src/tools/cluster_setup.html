@@ -489,11 +489,15 @@
       app.ontoolresult = (params) => {
         if (!state.clusterId) extractClusterId(params);
         const sc = params.structuredContent;
-        if (sc && sc.cluster_id && Array.isArray(sc.hosts)) {
-          state.clusterId = sc.cluster_id;
-          state.hosts = sc.hosts;
-          state.discoveryIsoUrl = sc.discovery_iso_url || "";
-          render();
+        if (sc && sc.result) {
+          let data;
+          try { data = typeof sc.result === "string" ? JSON.parse(sc.result) : sc.result; } catch { return; }
+          if (data && data.cluster_id && Array.isArray(data.hosts)) {
+            state.clusterId = data.cluster_id;
+            state.hosts = data.hosts;
+            state.discoveryIsoUrl = data.discovery_iso_url || "";
+            render();
+          }
         }
       };
     }).catch(() => {});
