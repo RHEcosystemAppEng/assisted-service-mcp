@@ -12,9 +12,11 @@ from fastmcp.apps import AppConfig, ResourceCSP
 from fastmcp.server.dependencies import get_http_headers
 from assisted_service_mcp.src.logger import log
 
+# Import auth utilities
 from assisted_service_mcp.utils.auth import get_offline_token, get_access_token
 from assisted_service_mcp.src.settings import get_setting, settings
 
+# Import all tool modules
 from assisted_service_mcp.src.tools import (
     cluster_tools,
     event_tools,
@@ -73,7 +75,9 @@ class AssistedServiceMCPServer:
     def __init__(self) -> None:
         """Initialize the MCP server with assisted service tools."""
         try:
+            # Initialize FastMCP server
             self.mcp = FastMCP("AssistedService")
+            # Define auth helpers bound to this MCP instance
             self._get_offline_token = lambda: get_offline_token(self.mcp)
             self._get_access_token = lambda: get_access_token(
                 self.mcp, offline_token_func=self._get_offline_token
@@ -127,7 +131,7 @@ class AssistedServiceMCPServer:
         )
         self.mcp.tool(app=_set)(self._wrap_tool(host_tools.get_cluster_hosts))
 
-        # Cluster management tools
+        # Register cluster management tools
         self.mcp.tool()(self._wrap_tool(cluster_tools.create_cluster))
         self.mcp.tool()(self._wrap_tool(cluster_tools.cluster_info))
         self.mcp.tool()(self._wrap_tool(cluster_tools.set_cluster_vips))
@@ -137,11 +141,11 @@ class AssistedServiceMCPServer:
         if settings.ENABLE_TROUBLESHOOTING_TOOLS:
             self.mcp.tool()(self._wrap_tool(cluster_tools.analyze_cluster_logs))
 
-        # Event monitoring tools
+        # Register event monitoring tools
         self.mcp.tool()(self._wrap_tool(event_tools.cluster_events))
         self.mcp.tool()(self._wrap_tool(event_tools.host_events))
 
-        # Download/URL tools
+        # Register download/URL tools
         self.mcp.tool()(
             self._wrap_tool(download_tools.cluster_iso_download_url)
         )
@@ -152,14 +156,14 @@ class AssistedServiceMCPServer:
             self._wrap_tool(download_tools.cluster_logs_download_url)
         )
 
-        # Version tools
+        # Register version tools
         self.mcp.tool()(self._wrap_tool(version_tools.list_versions))
 
-        # Operator bundle tools
+        # Register operator bundle tools
         self.mcp.tool()(self._wrap_tool(operator_tools.list_operator_bundles))
         self.mcp.tool()(self._wrap_tool(operator_tools.add_operator_bundle_to_cluster))
 
-        # Host management tools
+        # Register host management tools
         self.mcp.tool()(self._wrap_tool(host_tools.set_host_role))
 
         # Installation progress
@@ -170,7 +174,7 @@ class AssistedServiceMCPServer:
         # Health check
         self.mcp.tool()(self._wrap_tool(health_tools.check_prerequisites))
 
-        # Network configuration tools
+        # Register network configuration tools
         self.mcp.tool()(self._wrap_tool(network_tools.validate_nmstate_yaml))
         self.mcp.tool(
             description=f"""
@@ -268,13 +272,15 @@ class AssistedServiceMCPServer:
                 result = result.decode("utf-8", errors="replace")
             return result
 
+        # Get the original function signature
         sig = inspect.signature(tool_func)
         params = list(sig.parameters.values())
 
-        # Remove the first parameter (auth token provider)
+        # Remove the first parameter (auth token provider) since it's injected by the wrapper
         if len(params) >= 1:
             params = params[1:]
 
+        # Create new signature with remaining parameters
         new_sig = sig.replace(parameters=params)
         wrapped.__signature__ = new_sig  # type: ignore[attr-defined]
 

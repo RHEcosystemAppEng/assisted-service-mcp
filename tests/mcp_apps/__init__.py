@@ -1,1 +1,1 @@
-"""MCP Apps integration tests (downstream only)."""
+"""Tests for MCP Apps UI resources and tools."""

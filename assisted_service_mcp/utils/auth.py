@@ -68,6 +68,7 @@ def get_access_token(
         RuntimeError: If it isn't possible to obtain or generate the access token.
     """
     log.debug("Attempting to retrieve access token")
+    # First try to get the token from the authorization header:
     try:
         headers = get_http_headers(include={"authorization"})
         auth_header = headers.get("authorization")
@@ -79,7 +80,7 @@ def get_access_token(
     except (RuntimeError, KeyError, AttributeError):
         log.debug("Request headers not available for access token extraction")
 
-    # Try to get the offline token, and generate a new access token from it:
+    # Now try to get the offline token, and generate a new access token from it:
     log.debug("Generating new access token from offline token")
 
     # Use the provided offline token function or default to get_offline_token(mcp)

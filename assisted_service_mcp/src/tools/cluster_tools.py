@@ -189,10 +189,12 @@ async def create_cluster(  # pylint: disable=too-many-arguments,too-many-positio
         platform,
     )
 
+    # Set default cpu_architecture if not provided
     if cpu_architecture is None:
         cpu_architecture = "x86_64"
 
     if platform:
+        # Check for invalid combination: single_node = true and platform is specified and not "none"
         if single_node is True and platform != "none":
             return "Platform must be set to 'none' for single-node clusters"
     else:
@@ -202,6 +204,7 @@ async def create_cluster(  # pylint: disable=too-many-arguments,too-many-positio
 
     client = InventoryClient(get_access_token_func())
 
+    # Prepare cluster parameters
     cluster_params = {
         "base_dns_domain": base_domain,
         "tags": "chatbot",
@@ -218,6 +221,7 @@ async def create_cluster(  # pylint: disable=too-many-arguments,too-many-positio
 
     log.info("Successfully created cluster %s with ID: %s", name, cluster.id)
 
+    # Prepare infra env parameters
     infraenv_params = {
         "cluster_id": cluster.id,
         "openshift_version": cluster.openshift_version,
@@ -376,11 +380,14 @@ async def set_cluster_ssh_key(
     log.info("Setting SSH public key for cluster %s", cluster_id)
     client = InventoryClient(get_access_token_func())
 
+    # Import helper function here to avoid circular imports
     from assisted_service_mcp.src.tools.shared_helpers import _get_cluster_infra_env_id
 
+    # Update the cluster with the new SSH public key
     result = await client.update_cluster(cluster_id, ssh_public_key=ssh_public_key)
     log.info("Successfully updated cluster %s with new SSH key", cluster_id)
 
+    # Get the InfraEnv ID and update it
     try:
         infra_env_id = await _get_cluster_infra_env_id(client, cluster_id)
     except ValueError as e:
